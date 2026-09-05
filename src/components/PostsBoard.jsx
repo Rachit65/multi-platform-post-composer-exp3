@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Plus, Edit2, Trash2, CheckCircle2, Archive, CalendarClock } from 'lucide-react';
 import {
-  selectAllPosts,
+  selectVisiblePosts,
   selectPostsLoading,
   addPost,
   updatePost,
@@ -17,7 +17,7 @@ import { PLATFORM_DETAILS } from './platformConfig';
 
 export default function PostsBoard() {
   const dispatch = useDispatch();
-  const posts = useSelector(selectAllPosts);
+  const posts = useSelector(selectVisiblePosts);
   const loading = useSelector(selectPostsLoading);
   const platformLimits = useSelector(selectPlatformLimits);
   const currentUser = useSelector(selectCurrentUser);

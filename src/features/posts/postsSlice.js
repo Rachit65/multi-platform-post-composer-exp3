@@ -132,13 +132,23 @@ export const { addPost, updatePost, deletePost, publishPost, archivePost, schedu
 export const selectAllPosts = (state) =>
   state.posts.ids.map((id) => state.posts.entities[id]);
 
+export const selectVisiblePosts = (state) => {
+  const posts = selectAllPosts(state);
+  const currentUser = state.auth.user;
+
+  if (currentUser?.role === 'admin') {
+    return posts;
+  }
+
+  return posts.filter((post) => post.ownerId === currentUser?.sub);
+};
+
 export const selectPostById = (state, postId) => state.posts.entities[postId];
 
-export const selectPostCount = (state) => state.posts.ids.length;
+export const selectPostCount = (state) => selectVisiblePosts(state).length;
 
 export const selectPostsByStatus = (state, status) =>
-  state.posts.ids
-    .map((id) => state.posts.entities[id])
+  selectVisiblePosts(state)
     .filter((post) => post.status === status);
 
 export const selectPostsLoading = (state) => state.posts.loading;
