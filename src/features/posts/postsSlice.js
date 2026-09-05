@@ -19,6 +19,8 @@ export const loadPostsAsync = createAsyncThunk(
       return [
         {
           id: nanoid(),
+          ownerId: 'usr_regular_02',
+          ownerName: 'Alex Johnson',
           content: 'Welcome to the Redux Toolkit dashboard! This is a demo post.',
           selectedPlatforms: ['x', 'linkedin'],
           createdAt: new Date(Date.now() - 3600000).toISOString(),
@@ -26,6 +28,8 @@ export const loadPostsAsync = createAsyncThunk(
         },
         {
           id: nanoid(),
+          ownerId: 'usr_admin_01',
+          ownerName: 'Rachit Saini',
           content: 'Managing state with Redux Toolkit is now easier than ever with normalized state structure.',
           selectedPlatforms: ['linkedin', 'facebook'],
           createdAt: new Date(Date.now() - 7200000).toISOString(),
@@ -49,10 +53,12 @@ const postsSlice = createSlice({
         state.entities[post.id] = post;
         state.ids.unshift(post.id);
       },
-      prepare({ content, selectedPlatforms }) {
+      prepare({ content, selectedPlatforms, ownerId, ownerName }) {
         return {
           payload: {
             id: nanoid(),
+            ownerId,
+            ownerName,
             content,
             selectedPlatforms,
             createdAt: new Date().toISOString(),
@@ -91,6 +97,12 @@ const postsSlice = createSlice({
         state.entities[postId].status = 'archived';
       }
     },
+    schedulePost(state, action) {
+      const postId = action.payload;
+      if (state.entities[postId]) {
+        state.entities[postId].status = 'scheduled';
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -115,7 +127,7 @@ const postsSlice = createSlice({
   },
 });
 
-export const { addPost, updatePost, deletePost, publishPost, archivePost } = postsSlice.actions;
+export const { addPost, updatePost, deletePost, publishPost, archivePost, schedulePost } = postsSlice.actions;
 
 export const selectAllPosts = (state) =>
   state.posts.ids.map((id) => state.posts.entities[id]);

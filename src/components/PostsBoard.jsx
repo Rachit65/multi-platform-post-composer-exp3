@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plus, Edit2, Trash2, CheckCircle2, Archive, Copy } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle2, Archive, CalendarClock } from 'lucide-react';
 import {
   selectAllPosts,
   selectPostsLoading,
@@ -9,7 +9,9 @@ import {
   deletePost,
   publishPost,
   archivePost,
+  schedulePost,
 } from '../features/posts/postsSlice';
+import { selectCurrentUser, selectIsAdmin } from '../features/auth/authSlice';
 import { selectPlatformLimits } from '../features/platforms/platformsSlice';
 import { PLATFORM_DETAILS } from './platformConfig';
 
@@ -18,6 +20,8 @@ export default function PostsBoard() {
   const posts = useSelector(selectAllPosts);
   const loading = useSelector(selectPostsLoading);
   const platformLimits = useSelector(selectPlatformLimits);
+  const currentUser = useSelector(selectCurrentUser);
+  const isAdmin = useSelector(selectIsAdmin);
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -66,6 +70,8 @@ export default function PostsBoard() {
         addPost({
           content: formData.content,
           selectedPlatforms: formData.selectedPlatforms,
+          ownerId: currentUser?.sub,
+          ownerName: currentUser?.name,
         })
       );
     }
@@ -92,6 +98,10 @@ export default function PostsBoard() {
     dispatch(archivePost(postId));
   };
 
+  const handleSchedule = (postId) => {
+    dispatch(schedulePost(postId));
+  };
+
   const handleDelete = (postId) => {
     if (confirm('Are you sure you want to delete this post?')) {
       dispatch(deletePost(postId));
@@ -106,6 +116,8 @@ export default function PostsBoard() {
         return '#f59e0b';
       case 'archived':
         return '#6b7280';
+      case 'scheduled':
+        return '#3b82f6';
       default:
         return '#8f8f8f';
     }
@@ -114,7 +126,14 @@ export default function PostsBoard() {
   return (
     <div className="redux-card">
       <div className="redux-card-header">
-        <h2 className="redux-card-title">Posts Board</h2>
+        <div>
+          <h2 className="redux-card-title">Posts Board</h2>
+          <p className={`posts-permission-note ${isAdmin ? 'admin' : 'user'}`}>
+            {isAdmin
+              ? 'Admin moderation: manage scheduled posts and remove content.'
+              : 'Your posts: create, publish, schedule, edit, or delete your own content.'}
+          </p>
+        </div>
         <button
           onClick={handleCreateNew}
           disabled={isCreating || editingId}
@@ -191,9 +210,14 @@ export default function PostsBoard() {
                     <span className="post-date">
                       {new Date(post.createdAt).toLocaleDateString()}
                     </span>
+                    <span className="post-owner">
+                      {post.ownerId === currentUser?.sub ? 'Your post' : `By ${post.ownerName || 'another user'}`}
+                    </span>
                   </div>
                   <div className="post-actions">
-                    {post.status !== 'published' && (
+                    {(isAdmin || post.ownerId === currentUser?.sub) &&
+                      post.status !== 'published' &&
+                      post.status !== 'scheduled' && (
                       <button
                         onClick={() => handlePublish(post.id)}
                         className="action-button"
@@ -202,7 +226,25 @@ export default function PostsBoard() {
                         <CheckCircle2 size={16} />
                       </button>
                     )}
-                    {post.status !== 'archived' && (
+                    {!isAdmin && post.ownerId === currentUser?.sub && post.status !== 'scheduled' && (
+                      <button
+                        onClick={() => handleSchedule(post.id)}
+                        className="action-button"
+                        title="Schedule"
+                      >
+                        <CalendarClock size={16} />
+                      </button>
+                    )}
+                    {isAdmin && post.status === 'scheduled' && (
+                      <button
+                        onClick={() => handlePublish(post.id)}
+                        className="action-button"
+                        title="Publish scheduled post"
+                      >
+                        <CheckCircle2 size={16} />
+                      </button>
+                    )}
+                    {isAdmin && post.status !== 'archived' && (
                       <button
                         onClick={() => handleArchive(post.id)}
                         className="action-button"
@@ -211,20 +253,33 @@ export default function PostsBoard() {
                         <Archive size={16} />
                       </button>
                     )}
-                    <button
-                      onClick={() => handleEdit(post)}
-                      className="action-button"
-                      title="Edit"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(post.id)}
-                      className="action-button action-button-danger"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {!isAdmin && post.ownerId === currentUser?.sub && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(post)}
+                          className="action-button"
+                          title="Edit your post"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          className="action-button action-button-danger"
+                          title="Delete your post"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        className="action-button action-button-danger"
+                        title="Remove post"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
 

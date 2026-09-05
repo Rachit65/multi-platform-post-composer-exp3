@@ -71,8 +71,8 @@ export const registerAsync = createAsyncThunk(
           ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces'
           : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
         permissions: role === 'admin'
-          ? ['create_post', 'delete_post', 'manage_users', 'manage_platforms', 'system_config']
-          : ['create_post', 'publish_post', 'view_platforms'],
+          ? ['create_post', 'moderate_posts', 'manage_scheduled_posts', 'manage_users', 'manage_platforms', 'system_config', 'inspect_sessions']
+          : ['create_post', 'publish_post', 'schedule_post', 'edit_own_post', 'delete_own_post', 'view_platforms'],
         status: 'active',
         createdAt: new Date().toISOString(),
       };
@@ -154,8 +154,8 @@ export const adminChangeUserRoleAsync = createAsyncThunk(
             ...u,
             role: newRole,
             permissions: newRole === 'admin'
-              ? ['create_post', 'delete_post', 'manage_users', 'manage_platforms', 'system_config']
-              : ['create_post', 'publish_post', 'view_platforms'],
+              ? ['create_post', 'moderate_posts', 'manage_scheduled_posts', 'manage_users', 'manage_platforms', 'system_config', 'inspect_sessions']
+              : ['create_post', 'publish_post', 'schedule_post', 'edit_own_post', 'delete_own_post', 'view_platforms'],
           };
         }
         return u;

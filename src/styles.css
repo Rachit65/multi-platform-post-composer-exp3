@@ -602,6 +602,18 @@ textarea:focus-visible,
   line-height: 1.4;
 }
 
+.posts-permission-note {
+  max-width: 520px;
+}
+
+.posts-permission-note.admin {
+  color: #9a3412;
+}
+
+.posts-permission-note.user {
+  color: #0f766e;
+}
+
 .flex-between {
   display: flex;
   justify-content: space-between;
@@ -753,6 +765,12 @@ textarea:focus-visible,
 .post-date {
   color: #64748b;
   font-size: 0.8rem;
+}
+
+.post-owner {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .post-actions {
